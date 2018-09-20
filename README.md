@@ -19,10 +19,6 @@ kubectl apply -f k8s/nginx-ingress-mandatory.yaml
 kubectl apply -f k8s/nginx-ingress-cloud-generic.yaml
 ```
 
-#### do the dns
-
-*TODO*
-
 ### install kubeless
 
 ```bash
@@ -33,6 +29,12 @@ kubectl apply -f k8s/kubeless-v1.0.0-alpha.8.yaml
 
 ```bash
 kubectl apply -f k8s/kafka-zookeeper-v1.0.0-beta.0.yaml
+```
+
+### install argo
+
+```bash
+kubectl apply -f k8s/argo-2.2.0.yaml
 ```
 
 ## functions!
@@ -96,6 +98,15 @@ cd argo-list
 ```
 
 This function lists all argo workflows.
+
+#### rbac
+
+To make this function work lets do something hacky and wrong and give the `serviceAccount` `default:default` cluster-admin:
+
+```bash
+kubectl create clusterrolebinding default-admin --clusterrole=admin --serviceaccount=default:default
+
+```
 
 #### test
 
