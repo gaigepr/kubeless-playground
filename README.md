@@ -66,8 +66,121 @@ ignored = ["github.com/kubeless/kubeless/pkg/functions"]
 go build -o /dev/null v1.go
 ```
 
-#### deploy
+#### deploy the function
+
+This function is special, we have a yaml file that adds some environment variables so let's apply that yaml instead of using the `kubeless` command line.
 
 ```bash
-kubectl apply -f go-producer-1/function.yaml
+$ kubectl apply -f function.yaml
+```
+
+#### exposing the function over http
+
+```bash
+$ kubeless trigger http create go-producer-1-http-trigger \
+    --function-name go-producer-1 \
+    --hostname kubeless-demo.cyrusbio.com \
+    --path /go-producer-1
+```
+
+#### calling it
+
+```bash
+kubeless function call go-producer-1
+```
+
+### argo-list
+
+```bash
+cd argo-list
+```
+
+This function lists all argo workflows.
+
+#### test
+
+Does the code build:
+
+NOTE: Because of a hack in kubeless for the go runtime, to have this command succeed involves commenting out the following line in the `Gopkg.toml` and rerun `dep ensure`.
+```toml
+ignored = ["github.com/kubeless/kubeless/pkg/functions"]
+```
+
+ At the request of a contributor, I have opened a ticket [here](https://github.com/kubeless/kubeless/issues/911).
+
+```bash
+go build -o /dev/null v1.go
+```
+
+#### deploy the function
+
+```bash
+$ kubeless function deploy argo-list \
+    --runtime go1.10 \
+    --handler kubeless.Handler \
+    --from-file v1.go \
+    --dependencies Gopkg.toml
+```
+
+#### exposing the function over http
+
+```bash
+$ kubeless trigger http create argo-list-http-trigger \
+    --function-name argo-list \
+    --hostname kubeless-demo.cyrusbio.com \
+    --path /argo-list
+```
+
+#### calling it
+
+```bash
+kubeless function call argo-list
+```
+
+OR
+
+```bash
+$ curl --header "Content-Type:application/json" kubeless-demo.cyrusbio.com/argo-list
+```
+
+### node-echo
+
+```bash
+cd node-echo
+```
+
+This function echos whatever input it is given in event.Data.
+
+#### deploy the function
+
+```bash
+$ kubeless function deploy node-echo \
+    --runtime nodejs8 \
+    --handler main.echo \
+    --from-file main.js
+```
+
+#### exposing the function over http
+
+```bash
+$ kubeless trigger http create node-echo-http-trigger \
+    --function-name node-echo \
+    --hostname kubeless-demo.cyrusbio.com \
+    --path /node-echo
+```
+
+#### creating a kafka topic & trigger for node-echo
+
+This is the topic to which `go-producer-1` pushes messages. 
+
+```bash
+$ kubeless topic create node-echo-topic
+```
+
+Now, let's create a trigger so that each time a message is publishes to `node-echo-topic`, node-echo will logs the contents of the message.
+
+```bash
+$ kubeless trigger kafka create node-echo-kafka-trigger \
+    --function-selector node-echo \
+    --trigger-topic node-echo-topic
 ```
