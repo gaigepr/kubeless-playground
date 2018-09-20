@@ -1,6 +1,7 @@
 module.exports = {
   echo: function (event, context) {
-    console.log(`THE DATA: ${event.data}`);
-    return event.data;
+    dataString = JSON.stringify(event.data)
+    console.log(`THE DATA: ${dataString}`);
+    return JSON.stringify(dataString);
   }
 }
