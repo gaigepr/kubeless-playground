@@ -39,9 +39,33 @@ kubectl apply -f k8s/kafka-zookeeper-v1.0.0-beta.0.yaml
 
 ### go-producer-1
 
+```bash
+cd go-producer-1
+```
+
 This progem publishes a json message to a kafka topic specified by an environment variable.
+
+#### test
+
+Run the unit tests:
+
+```bash
+go test -v
+```
+
+Does the code build:
+
+NOTE: Because of a hack in kubeless for the go runtime, to have this command succeed involves commenting out the following line in the `Gopkg.toml` and rerun `dep ensure`. At the request of a contributor, I have opened a ticket here: 
+```toml
+ignored = ["github.com/kubeless/kubeless/pkg/functions"]
+```
+
+```bash
+go build -o /dev/null v1.go
+```
 
 #### deploy
 
 ```bash
-kubeless
+kubectl apply -f go-producer-1/function.yaml
+```
