@@ -3,6 +3,7 @@ package kubeless
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"time"
 
@@ -26,8 +27,10 @@ func Handler(event functions.Event, ctx functions.Context) (string, error) {
 
 	conn, _ := kafka.DialLeader(context.Background(), "tcp", kafkaHost+":"+kafkaPort, topic, partition)
 	conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
+	message := generateMessage(event)
+	log.Println(message)
 	conn.WriteMessages(
-		kafka.Message{Value: []byte(generateMessage(event))},
+		kafka.Message{Value: []byte(message)},
 	)
 
 	conn.Close()
