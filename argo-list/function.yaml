@@ -1,0 +1,87 @@
+apiVersion: kubeless.io/v1beta1
+kind: Function
+metadata:
+  labels:
+    created-by: kubeless
+    function: argo-list
+  name: argo-list
+spec:
+  checksum: sha256:aff4cf4f670487ad7f17394fc34dbc1056e5dc700fc1481b562ce6c13c078eab
+  deployment:
+    metadata:
+      creationTimestamp: null
+    spec:
+      strategy: {}
+      template:
+        metadata:
+          creationTimestamp: null
+        spec:
+          containers:
+          - imagePullPolicy: Always
+            name: "function"
+            env:
+            - name: ARGO_NAMESPACE
+              value: argo
+            resources: {}
+    status: {}
+  deps: |
+    ignored = ["github.com/kubeless/kubeless/pkg/functions"]
+
+    [[constraint]]
+      name = "github.com/argoproj/argo"
+      version = "2.2.0"
+
+    [[constraint]]
+      name = "github.com/kubeless/kubeless"
+      version = "0.6.0"
+
+    [[constraint]]
+      branch = "release-7.0"
+      name = "k8s.io/client-go"
+
+    [prune]
+      go-tests = true
+      unused-packages = true
+  function: "package kubeless\n\nimport (\n\t\"encoding/json\"\n\t\"os\"\n\n\twfclientset
+    \"github.com/argoproj/argo/pkg/client/clientset/versioned\"\n\t\"github.com/argoproj/argo/pkg/client/clientset/versioned/typed/workflow/v1alpha1\"\n\t\"github.com/kubeless/kubeless/pkg/functions\"\n\n\tmetav1
+    \"k8s.io/apimachinery/pkg/apis/meta/v1\"\n\t\"k8s.io/client-go/kubernetes\"\n\t\"k8s.io/client-go/rest\"\n\t\"k8s.io/client-go/tools/clientcmd\"\n)\n\nvar
+    (\n\targoNamespace string = os.Getenv(\"ARGO_NAMESPACE\")\n\n\trestConfig   *rest.Config\n\tclientset
+    \   *kubernetes.Clientset\n\tclientConfig clientcmd.ClientConfig\n\twfClient     v1alpha1.WorkflowInterface\n)\n\nfunc
+    initKubeAndArgoClients(namespace string) (err error) {\n\tloadingRules := clientcmd.NewDefaultClientConfigLoadingRules()\n\tloadingRules.DefaultClientConfig
+    = &clientcmd.DefaultClientConfig\n\toverrides := clientcmd.ConfigOverrides{}\n\t_
+    = clientcmd.RecommendedConfigOverrideFlags(\"\")\n\tclientConfig = clientcmd.NewInteractiveDeferredLoadingClientConfig(loadingRules,
+    &overrides, os.Stdin)\n\n\trestConfig, err = clientConfig.ClientConfig()\n\tif
+    err != nil {\n\t\treturn err\n\t}\n\n\tclientset, err = kubernetes.NewForConfig(restConfig)\n\tif
+    err != nil {\n\t\treturn err\n\t}\n\n\twfClient = wfclientset.NewForConfigOrDie(restConfig).ArgoprojV1alpha1().Workflows(namespace)\n\n\treturn
+    nil\n}\n\nfunc Handler(event functions.Event, context functions.Context) (string,
+    error) {\n\tvar err error\n\n\terr = initKubeAndArgoClients(argoNamespace)\n\tif
+    err != nil {\n\t\treturn \"error1\", err\n\t}\n\n\twfs, err := wfClient.List(metav1.ListOptions{})\n\tif
+    err != nil {\n\t\treturn \"error2\", err\n\t}\n\n\tbuf, err := json.Marshal(wfs.Items)\n\tif
+    err != nil {\n\t\treturn \"error3\", err\n\t}\n\n\treturn string(buf), nil\n}\n"
+  function-content-type: text
+  handler: kubeless.Handler
+  horizontalPodAutoscaler:
+    metadata:
+      creationTimestamp: null
+    spec:
+      maxReplicas: 0
+      scaleTargetRef:
+        kind: ""
+        name: ""
+    status:
+      conditions: null
+      currentMetrics: null
+      currentReplicas: 0
+      desiredReplicas: 0
+  runtime: go1.10
+  service:
+    ports:
+    - name: http-function-port
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+    selector:
+      created-by: kubeless
+      function: argo-list
+    type: ClusterIP
+  timeout: "180"
