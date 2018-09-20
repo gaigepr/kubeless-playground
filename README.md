@@ -41,6 +41,9 @@ kubectl apply -f k8s/argo-2.2.0.yaml
 
 NOTE: This is non-functional right now, don't do this if you want your function pods to enter the `RUNNING` state.
 
+* https://engineering.bitnami.com/articles/serverless-service-mesh-with-kubeless-and-istio.html
+* https://istio.io/docs/setup/kubernetes/spec-requirements/
+
 ```bash
 kubectl apply -f k8s/istio-namespace.yaml
 kubectl apply -f k8s/istio-crds.yaml
