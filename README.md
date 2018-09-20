@@ -37,6 +37,22 @@ kubectl apply -f k8s/kafka-zookeeper-v1.0.0-beta.0.yaml
 kubectl apply -f k8s/argo-2.2.0.yaml
 ```
 
+### install istio
+
+NOTE: This is non-functional right now, don't do this if you want your function pods to enter the `RUNNING` state.
+
+```bash
+kubectl apply -f k8s/istio-namespace.yaml
+kubectl apply -f k8s/istio-crds.yaml
+kubectl apply -f k8s/istio-demo.yaml
+```
+
+Label the default namespace such that istio will inject sidecars. 
+
+```bash
+kubectl label namespace default istio-injection=enabled
+```
+
 ## functions!
 
 ### go-producer-1
