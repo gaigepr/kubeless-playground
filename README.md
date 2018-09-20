@@ -80,7 +80,7 @@ $ kubectl apply -f function.yaml
 $ kubeless trigger http create go-producer-1-http-trigger \
     --function-name go-producer-1 \
     --hostname kubeless-demo.cyrusbio.com \
-    --path /go-producer-1
+    --path go-producer-1
 ```
 
 #### calling it
@@ -128,7 +128,7 @@ $ kubeless function deploy argo-list \
 $ kubeless trigger http create argo-list-http-trigger \
     --function-name argo-list \
     --hostname kubeless-demo.cyrusbio.com \
-    --path /argo-list
+    --path argo-list
 ```
 
 #### calling it
@@ -166,7 +166,7 @@ $ kubeless function deploy node-echo \
 $ kubeless trigger http create node-echo-http-trigger \
     --function-name node-echo \
     --hostname kubeless-demo.cyrusbio.com \
-    --path /node-echo
+    --path node-echo
 ```
 
 #### creating a kafka topic & trigger for node-echo
@@ -184,3 +184,31 @@ $ kubeless trigger kafka create node-echo-kafka-trigger \
     --function-selector node-echo \
     --trigger-topic node-echo-topic
 ```
+
+### bringing it all together
+
+There are a few ways to trigger these functions we have created. For example, the node-echo function responds to http requests at `http://kubeless-demo.cyrusbio.com/node-echo` as well as messages published to the `node-echo-topic` kafka topic. Let's look at a few ways we can trigger `node-echo`.
+
+Test with `kubeless topic publish`.
+```bash
+kubeless topic publish --topic node-echo-topic --data 'Hello, friend.'
+```
+
+Test with curl.
+```bash
+curl \
+    --data '{"Another": "Echo"}' \
+    --header "Content-Type:application/json" \
+    kubeless-demo.cyrusbio.com/node-echo
+```
+
+This method invokes a function that publishes a message to the `node-echo-topic`. 
+```bash
+kubeless function call go-producer-1 --data 'Some data for youz'
+```
+
+Test with `kubeless function call`
+```bash
+kubeless function call node-echo --data 'Some different data for youz'
+```
+
