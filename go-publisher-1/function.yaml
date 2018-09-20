@@ -1,0 +1,82 @@
+apiVersion: kubeless.io/v1beta1
+kind: Function
+metadata:
+  labels:
+    created-by: kubeless
+    function: go-producer-1
+  name: go-producer-1
+  namespace: default
+spec:
+  checksum: sha256:5df9ace9ec286e0963b6e09456a9a87b24094369d184a7a81bef4b2bb99a7e87
+  deployment:
+    metadata:
+    spec:
+      strategy: {}
+      template:
+        metadata:
+          creationTimestamp: null
+        spec:
+          containers:
+          # add sidecars here!
+          - imagePullPolicy: Always
+            env:
+            - name: KAFKA_HOST
+              value: "kafka.kubeless.svc.cluster.local"
+            - name: KAFKA_PORT
+              value: "9092"
+            - name: KAFKA_TOPIC
+              value: "node-echo-trigger-topic"
+            name: "func"
+            resources: {}
+    status: {}
+  deps: |
+    ignored = ["github.com/kubeless/kubeless/pkg/functions"]
+
+    [[constraint]]
+      name = "github.com/kubeless/kubeless"
+      version = "0.6.0"
+
+    [[constraint]]
+      name = "github.com/segmentio/kafka-go"
+      version = "0.1.0"
+
+    [prune]
+      go-tests = true
+      unused-packages = true
+  function: "package kubeless\n\nimport (\n\t\"context\"\n\t\"fmt\"\n\t\"os\"\n\t\"time\"\n\n\t\"github.com/kubeless/kubeless/pkg/functions\"\n\tkafka
+    \"github.com/segmentio/kafka-go\"\n)\n\nvar (\n\tkafkaHost  string = os.Getenv(\"KAFKA_HOST\")\n\tkafkaPort
+    \ string = os.Getenv(\"KAFKA_PORT\")\n\tkafkaTopic string = os.Getenv(\"KAFKA_TOPIC\")\n)\n\nfunc
+    generateMessage(event functions.Event) string {\n\treturn fmt.Sprintf(`{ \"id\":\"%s\"
+    , \"time\":\"%s\" , \"data\":\"%s\" }`, event.EventID, event.EventTime, event.Data)\n}\n\nfunc
+    Handler(event functions.Event, ctx functions.Context) (string, error) {\n\ttopic
+    := kafkaTopic\n\tpartition := 0\n\n\tconn, _ := kafka.DialLeader(context.Background(),
+    \"tcp\", kafkaHost+\":\"+kafkaPort, topic, partition)\n\tconn.SetWriteDeadline(time.Now().Add(10
+    * time.Second))\n\tconn.WriteMessages(\n\t\tkafka.Message{Value: []byte(generateMessage(event))},\n\t)\n\n\tconn.Close()\n\treturn
+    \"ok\", nil\n}\n"
+  function-content-type: text
+  handler: kubeless.Handler
+  horizontalPodAutoscaler:
+    metadata:
+      creationTimestamp: null
+    spec:
+      maxReplicas: 0
+      scaleTargetRef:
+        kind: ""
+        name: ""
+    status:
+      conditions: null
+      currentMetrics: null
+      currentReplicas: 0
+      desiredReplicas: 0
+  runtime: go1.10
+  service:
+    ports:
+    - name: http-function-port
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+    selector:
+      created-by: kubeless
+      function: go-producer-1
+    type: ClusterIP
+  timeout: "180"

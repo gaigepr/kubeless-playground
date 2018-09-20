@@ -34,3 +34,14 @@ kubectl apply -f k8s/kubeless-v1.0.0-alpha.8.yaml
 ```bash
 kubectl apply -f k8s/kafka-zookeeper-v1.0.0-beta.0.yaml
 ```
+
+## functions!
+
+### go-producer-1
+
+This progem publishes a json message to a kafka topic specified by an environment variable.
+
+#### deploy
+
+```bash
+kubeless
