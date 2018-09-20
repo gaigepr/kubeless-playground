@@ -25,7 +25,7 @@ spec:
             - name: KAFKA_PORT
               value: "9092"
             - name: KAFKA_TOPIC
-              value: "node-echo-trigger-topic"
+              value: "node-echo-topic"
             name: "func"
             resources: {}
     status: {}
