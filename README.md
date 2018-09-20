@@ -55,10 +55,12 @@ go test -v
 
 Does the code build:
 
-NOTE: Because of a hack in kubeless for the go runtime, to have this command succeed involves commenting out the following line in the `Gopkg.toml` and rerun `dep ensure`. At the request of a contributor, I have opened a ticket here: 
+NOTE: Because of a hack in kubeless for the go runtime, to have this command succeed involves commenting out the following line in the `Gopkg.toml` and rerun `dep ensure`.
 ```toml
 ignored = ["github.com/kubeless/kubeless/pkg/functions"]
 ```
+
+ At the request of a contributor, I have opened a ticket [here](https://github.com/kubeless/kubeless/issues/911).
 
 ```bash
 go build -o /dev/null v1.go
