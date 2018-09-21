@@ -1,0 +1,5 @@
+ignored = ["github.com/kubeless/kubeless/pkg/functions"]
+
+[prune]
+  go-tests = true
+  unused-packages = true
